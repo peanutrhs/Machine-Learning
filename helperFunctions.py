@@ -1,4 +1,4 @@
-
+import string
 # Assigns a classification according to house prices
 def get_class(to_check):
     input_v = int(to_check)
@@ -210,3 +210,117 @@ def convertTypeOfHeatData(toConvert):
     else:
         print('error converting in TypeOfHeat: ',toConvert)
         return -1
+# Central air conditioning 
+def convertACData(toConvert):
+    if toConvert == 'Y':
+        return 1
+    if toConvert == 'N':
+        return 1/2
+    else:
+        print('error converting in ACData: ',toConvert)
+        return -1
+# First Floor square feet
+def convertSqFtData(toConvert):
+    total = 3
+
+    if int(toConvert) <= 334:
+        return 1/3
+    if 334 < int(toConvert) < 1162:
+        return 2/3
+    else:
+        return 1
+
+# Kitchen quality 
+def convertKitchenQualityData(toConvert):
+    total = 5
+    if toConvert == 'Ex': #	Excellent
+        return 5/total
+    elif toConvert == 'Gd': # Good
+        return 4/total
+    elif toConvert == 'TA': # Typical/Average
+        return 3/total
+    elif toConvert == 'Fa': # Fair
+        return 2/total
+    elif toConvert == 'Po': # Poor
+        return  1/total
+    else:
+        print('error converting in KitchenQualityData: ',toConvert)
+        return -1
+# Home functionality (Assume typical unless deductions are warranted)
+def convertFunctionalityData(toConvert):
+    total = 8
+    if toConvert == 'Typ': # Typical Functionality
+        return 1
+    elif toConvert == 'Min1': #	Minor Deductions 1
+        return 7/total
+    elif toConvert == 'Min2': #	Minor Deductions 2
+        return 6/total
+    elif toConvert == 'Mod': # Moderate Deductions
+        return 5/total
+    elif toConvert == 'Maj1': #	Major Deductions 1
+        return 4/total
+    elif toConvert == 'Maj2': #	Major Deductions 2
+        return 3/total
+    elif toConvert == 'Sev': # Severely Damaged
+        return 2/total
+    elif toConvert == 'Sal': #	Salvage only
+        return 1/total
+    else:
+        print('error converting in functionalityData: ',toConvert)
+        return -1
+
+# Garage quality
+def convertGarageQuality(toConvert):
+    total = 6
+    if toConvert == 'Ex': #	Excellent
+        return 1
+    elif toConvert == 'Gd': # Good
+        return 5/total
+    elif toConvert == 'TA': # Typical/Average
+        return 4/total
+    elif toConvert == 'Fa': # Fair
+        return 3/total
+    elif toConvert == 'Po': # Poor
+        return 2/total
+    else:
+        return 1/total
+
+def convertData(matrix):
+    zone = 2
+    street = 5
+    utilities = 9
+    neighborhood = 12
+    condition = 18
+    quality = 19
+    mSclass = 1
+    bldgType = 15
+    built = 19
+    heating = 39
+    AC = 41
+    firstSqFt = 43
+    secondSqFt = 44
+    kitchenQual = 53
+    functionality = 55
+    garageQual = 63
+    
+
+    for row in range(1,len(matrix)):
+        matrix[row][zone] = convertMSZoningData(matrix[row][zone]) # zones
+        matrix[row][street] = convertStreetData(matrix[row][street]) # street paved
+        matrix[row][utilities] = convertUtilitiesData(matrix[row][utilities])
+        matrix[row][neighborhood] = convertNeighborhoodData(matrix[row][neighborhood])
+        matrix[row][condition] = convertOverAllConditionData(matrix[row][condition])
+        matrix[row][quality] = convertOverAllQualityData(matrix[row][quality])
+        matrix[row][mSclass] = convertMSSubClassData(matrix[row][mSclass])
+        matrix[row][bldgType] = convertBldgTypeData(matrix[row][bldgType])
+        year = str(matrix[row][built])
+        year = year.translate(str.maketrans('','',string.punctuation))
+        matrix[row][built] = convertYearBuildData(year)
+        matrix[row][heating] = convertTypeOfHeatData(matrix[row][heating])
+        matrix[row][AC] = convertACData(matrix[row][AC])
+        matrix[row][firstSqFt] = convertSqFtData(matrix[row][firstSqFt])
+        matrix[row][secondSqFt] = convertSqFtData(matrix[row][secondSqFt])
+        matrix[row][kitchenQual] = convertKitchenQualityData(matrix[row][kitchenQual])
+        matrix[row][functionality] = convertFunctionalityData(matrix[row][functionality])
+        matrix[row][garageQual] = convertGarageQuality(matrix[row][garageQual])
+        

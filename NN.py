@@ -25,36 +25,11 @@ if __name__ == "__main__":  # main function call
             if train[row][feature] == 'NA':
                 train[row][feature] = 0
     # convert all text to a numerical value
-    zone = 2
-    street = 5
-    utilities = 9
-    neighborhood = 12
-    condition = 18
-    quality = 19
-    mSclass = 1
-    bldgType = 15
-    built = 19
-    heating = 39
+    convertData(train)
+    
 
-    for row in range(1,len(train)):
-        train[row][zone] = convertMSZoningData(train[row][zone]) # zones
-        train[row][street] = convertStreetData(train[row][street]) # street paved
-        train[row][utilities] = convertUtilitiesData(train[row][utilities])
-        train[row][neighborhood] = convertNeighborhoodData(train[row][neighborhood])
-        train[row][condition] = convertOverAllConditionData(train[row][condition])
-        train[row][quality] = convertOverAllQualityData(train[row][quality])
-        train[row][mSclass] = convertMSSubClassData(train[row][mSclass])
-        train[row][bldgType] = convertBldgTypeData(train[row][bldgType])
-        year = str(train[row][built])
-        year = year.translate(str.maketrans('','',string.punctuation))
-        train[row][built] = convertYearBuildData(year)
-        train[row][heating] = convertTypeOfHeatData(train[row][heating])
-
-
-        
-    print("train MSZoning:")
-    for row in range(0,len(train)):
-        print(train[row][heating])
-        
+   
+       
+      
     print(len(train))
     print((len(train[0])))
