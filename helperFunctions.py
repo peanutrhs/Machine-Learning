@@ -1,4 +1,8 @@
 import string
+import csv
+
+from numpy import mat
+
 # Assigns a classification according to house prices
 def get_class(to_check):
     input_v = int(to_check)
@@ -285,6 +289,96 @@ def convertGarageQuality(toConvert):
     else:
         return 1/total
 
+# Evaluates the quality of the material on the exterior 
+def convertExternalQualData(toConvert):
+    total = 5
+    if toConvert == 'Ex': #	Excellent
+        return 1
+    elif toConvert == 'Gd': # Good
+        return 4/total
+    elif toConvert == 'TA': # Average/Typical
+        return 3/total
+    elif toConvert == 'Fa': # Fair
+        return 2/total
+    elif toConvert == 'Po': # Poor
+        return 1/total
+    else:
+        print('error converting in ExternalQualData: ',toConvert)
+
+# Evaluates the present condition of the material on the exterior
+def convertExteriorCondData(toConvert):
+    total = 5
+    if toConvert == 'Ex': #	Excellent
+        return 1
+    elif toConvert == 'Gd': # Good
+        return 4/total
+    elif toConvert == 'TA': # Average/Typical
+        return 3/total
+    elif toConvert == 'Fa': # Fair
+        return 2/total
+    elif toConvert == 'Po': # Poor
+        return 1/total
+    else:
+        print('error converting in ExternalMaterialData: ',toConvert)
+    
+# Garage location
+def convertGarageLocData(toConvert):
+    if toConvert == '2Types': #	More than one type of garage
+        return 1
+    elif toConvert == 'Attchd': # Attached to home
+        return 6/7
+    elif toConvert == 'Basment': # Basement Garage
+        return 5/7
+    elif toConvert == 'BuiltIn': #	Built-In (Garage part of house - typically has room above garage)
+        return 4/7
+    elif toConvert == 'CarPort': # Car Port
+        return 3/7
+    elif toConvert ==  'Detchd': #	Detached from home
+        return 2/7
+    else:
+        return 1/7
+
+# Garage condition 
+def convertGarageCondData(toConvert):
+    total = 6
+    if toConvert == 'Ex': #	Excellent
+        return 1
+    elif toConvert == 'Gd': # Good
+        return 5/total
+    elif toConvert == 'TA': # Typical/Average
+        return 4/total
+    elif toConvert == 'Fa': # Fair
+        return 3/total
+    elif toConvert == 'Po': # Poor
+        return 2/total
+    else:
+        return 1/total
+
+# paved drive
+def convertPavedDriveData(toConvert):
+    if toConvert == 'Y':
+        return 1
+    else:
+        return 1/2
+
+# Condition of sale
+def convertSaleCondData(toConvert):
+    if toConvert == 'Normal': #	Normal Sale
+        return 1
+    elif toConvert == 'Abnorml': # Abnormal Sale -  trade, foreclosure, short sale
+        return 5/6
+    elif toConvert == 'AdjLand': # Adjoining Land Purchase
+        return 4/6
+    elif toConvert == 'Alloca': # Allocation - two linked properties with separate deeds, typically condo with a garage unit	
+        return 3/6
+    elif toConvert == 'Family': # Sale between family members
+        return 2/6
+    elif toConvert == 'Partial': #	Home was not completed when last assessed (associated with New Homes)
+        return 1/6
+    else:
+        return 0
+
+
 def convertData(matrix):
     zone = 2
     street = 5
@@ -302,7 +396,12 @@ def convertData(matrix):
     kitchenQual = 53
     functionality = 55
     garageQual = 63
-    
+    garageCond = 64
+    externalQual = 27
+    externalCond = 28
+    garageLoc = 58
+    pavedDrive = 65
+    saleCondition = 80
 
     for row in range(1,len(matrix)):
         matrix[row][zone] = convertMSZoningData(matrix[row][zone]) # zones
@@ -323,4 +422,28 @@ def convertData(matrix):
         matrix[row][kitchenQual] = convertKitchenQualityData(matrix[row][kitchenQual])
         matrix[row][functionality] = convertFunctionalityData(matrix[row][functionality])
         matrix[row][garageQual] = convertGarageQuality(matrix[row][garageQual])
+        matrix[row][garageCond] = convertGarageCondData(matrix[row][garageCond])
+        matrix[row][externalQual] = convertExternalQualData(matrix[row][externalQual])
+        matrix[row][externalCond] = convertExteriorCondData(matrix[row][externalCond])
+        matrix[row][garageLoc] = convertGarageLocData(matrix[row][garageLoc])
+        matrix[row][pavedDrive] = convertPavedDriveData(matrix[row][pavedDrive])
+        matrix[row][saleCondition] = convertSaleCondData(matrix[row][saleCondition])
+
+        # for any columns that have a 'NA' in it, replace with a zero.
+    for row in range(0, len(matrix)):
+        for feature in range(0, 80):
+            if matrix[row][feature] == 'NA':
+                matrix[row][feature] = 0
+
+def createTruthValues(truth,source):
+    print('length of truth: ',len(truth))
+    for row in range(0,len(truth)):
+        truth[row] = get_class(source[row][80])
+
+def getData(file,array):
+    with open(file, newline='\n') as csvfile:  # read in from test.csv for test data
+        csv_reader = csv.reader(csvfile, delimiter=',') # reads in
+        for row in csv_reader:  # append stuff from each row/data point
+            array.append(row)  # append
+
         
