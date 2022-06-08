@@ -705,7 +705,10 @@ def convertGarageQuality(toConvert):
 
 # convert to int
 def convertToInt(toConvert):
-    return int(toConvert)
+    if toConvert == 'NA':
+        return 0
+    else:
+        return int(toConvert)
 
 # Garage location
 def convertGarageLocData(toConvert):
