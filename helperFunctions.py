@@ -1016,7 +1016,7 @@ def convertData(matrix):
 def createTruthValues(truth,source):
     print('length of truth: ',len(truth))
     for row in range(0,len(truth)):
-        truth[row] = get_class(source[row][80])
+        truth[row] = int(get_class(source[row][80]))
 
 def getData(file,array):
     with open(file, newline='\n') as csvfile:  # read in from test.csv for test data

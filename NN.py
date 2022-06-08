@@ -42,7 +42,7 @@ if __name__ == "__main__":  # main function call
     train[:,0] = 1 # set id to bias in train
     convertData(train)
     train = train.astype(float)
-    
+    groundTruth = np.identity(6,dtype = int); #this is a 5 X 5 I matrix  
     # create the truth with the assigned class. 
     truth = np.zeros((1460)).astype(int)
     
@@ -51,6 +51,7 @@ if __name__ == "__main__":  # main function call
     truePositive = 0
     trueNegative = 0
     createTruthValues(truth,train)
+    
     train = np.delete(train,80,1) # delete the home values out of training set
     #print('train:',train)
     HiddenLayer = np.zeros((numHiddenUnits+1,1)) # hold all my outputs from initial dot product
@@ -85,14 +86,15 @@ if __name__ == "__main__":  # main function call
             for l in range(0,outputLayerSum.size):
                 outputLayerSum[l] = 1/(1 + np.exp(-outputLayerSum[l])) # => (5,1)
             # iterpret the output layer as a classification
-            
+            tk = np.reshape(groundTruth[truth[i]],(6,1)).astype(float)
+            tk = np.select([tk==1,tk==0],[0.9,0.1],tk)
             prediction = np.argmax(outputLayerSum)
             #print('Prediction: ', prediction, ' truth[',i,']: ',truth[i])
             if prediction != truth[i]:
                 outputError = np.zeros((5,1))
                 hiddenError = np.zeros((numHiddenUnits,1))
                 for m in range(0,len(outputError)):
-                    outputError[m] = outputLayerSum[m]*(1-outputLayerSum[m])*(truth[m]-outputLayerSum[m]) #producing outputError
+                    outputError[m] = outputLayerSum[m]*(1-outputLayerSum[m])*(tk[m]-outputLayerSum[m]) #producing outputError
                 for n in range(0,len(hiddenToOutputWeights)-1):
                     sum = np.dot(hiddenToOutputWeights,outputError)
                     sum = np.sum(sum)
