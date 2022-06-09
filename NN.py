@@ -44,7 +44,7 @@ if __name__ == "__main__":  # main function call
     
     
     HiddenLayer = np.zeros((numHiddenUnits+1,1)) # hold all my outputs from initial dot product
-    momentum = 0.8 # change during experimemts
+    momentum = 0.9 # change during experimemts
     #  train[i] = (80,1460), hiddenLayer = (1460,20), inputToHiddenWeights = (20,1460)
     
     inputToHiddenWeights = np.random.default_rng().uniform(low=-0.05, high = 0.05, size = (80,numHiddenUnits))
@@ -125,11 +125,18 @@ if __name__ == "__main__":  # main function call
         print("correctOutput: ",correctOutput)
         print("trainAccuracy: ")
         print(trainAccuracy)
-        epoch += 1
         
+        epoch += 1
+    maxAccuracy= 0.0
+    for row in range(0,len(testAccuracy)):
+        if testAccuracy[row]>  maxAccuracy:
+            maxAccuracy = testAccuracy[row]
+    print('maxAccuracy:',maxAccuracy)
     text = 'eta = ' + str(eta[0])
     if Debug:
         print(confusionMatrixTest)
+    maxAccuracy = np.argmax(trainAccuracy)
+    print("highest Accuracy is: ",maxAccuracy)
     plt.plot(trainAccuracy)
     plt.plot(testAccuracy)
     plt.title('Training & Test Plot')
@@ -140,5 +147,5 @@ if __name__ == "__main__":  # main function call
     plt.show()
     df_cm = pd.DataFrame(confusionMatrixTest,range(5),range(5))
     sb.set(font_scale = 1.4)
-    sb.heatmap(df_cm,annot=True,annot_kws={"size":20})
+    sb.heatmap(df_cm,annot=True,annot_kws={"size":30})
     plt.show()     
