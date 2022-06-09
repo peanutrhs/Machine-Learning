@@ -21,7 +21,7 @@ if __name__ == "__main__":  # main function call
     
     testdir = dir[0] + '/test.csv'
     traindir = dir[0] + '/train.csv'
-    eta = [0.001] # eta for each different eta
+    eta = [0.01] # eta for each different eta
     # Get the data and import into arrays
     getData(testdir,test)
     
@@ -37,10 +37,7 @@ if __name__ == "__main__":  # main function call
     groundTruth = np.identity(6,dtype = int); #this is a 5 X 5 I matrix  
     # create the truth with the assigned class. 
     truth = np.zeros((1460)).astype(int)
-    falsePositive = 0
-    falseNegative = 0
-    truePositive = 0
-    trueNegative = 0
+    
     
     
     HiddenLayer = np.zeros((numHiddenUnits+1,1)) # hold all my outputs from initial dot product
@@ -57,6 +54,10 @@ if __name__ == "__main__":  # main function call
     epoch = 0 
     while(epoch <400):
         print("starting Epoch ",epoch)
+        falsePositive = 0
+        falseNegative = 0
+        truePositive = 0
+        trueNegative = 0
         train = [] # traindata
         getData(traindir,train)
         train = np.array(train)
@@ -84,7 +85,6 @@ if __name__ == "__main__":  # main function call
             for j in range(0,hiddenLayerSum.size):
                 hiddenLayerSum[j] = 1/(1+ np.exp(-hiddenLayerSum[j])) # => (20,1)
                 HiddenLayer[j+1] = hiddenLayerSum[j] #putting into hiddenLayer
-
             for k in range(0,hiddenLayerSum.size):
                 outputLayerSum = np.dot(np.transpose(hiddenToOutputWeights),HiddenLayer) # => (5,1)
             
@@ -99,6 +99,13 @@ if __name__ == "__main__":  # main function call
                 print('prediction:',prediction)
             #print('Prediction: ', prediction, ' truth[',i,']: ',truth[i])
             if prediction != truth[i]:
+                if Debug:
+                    print('truth[i]!=prediction')
+                    print('prediction: ', prediction, ' truth[i]:',truth[i],' tk[prediction]:',tk[prediction])
+                if tk[prediction] == 0.1:
+                    trueNegative += 1
+                else:
+                    falsePositive += 1
                 outputError = np.zeros((5,1))
                 hiddenError = np.zeros((numHiddenUnits,1))
                 for m in range(0,len(outputError)):
@@ -114,18 +121,38 @@ if __name__ == "__main__":  # main function call
                 hiddenToOutputWeights += DeltaHiddenOutputWeights .T #transpose, updating weights
                 inputToHiddenWeights += DeltaHiddenInputWeights.T  #updating weights
             if(truth[i]==prediction):
-    
+                if Debug:
+                    print('truth[i]==prediction')
+                    print('prediction: ', prediction, ' truth[i]:',truth[i],' tk[prediction]:',tk[prediction])
+                if tk[prediction] == 0.9:
+                    truePositive += 1
+                else:
+                    falsePositive += 1
                 correctOutput +=  1
                 confusionRow = prediction
                 confusioncol = truth[i]
                 confusionMatrixTest[confusionRow][confusioncol] += 1
         trainAccuracy.append(correctOutput/len(train))
-        print("confusion Matrix: ")
-        print(confusionMatrixTest)
+        if Debug:
+            print("confusion Matrix: ")
+            print(confusionMatrixTest)
         print("correctOutput: ",correctOutput)
         print("trainAccuracy: ")
         print(trainAccuracy)
-        
+        sensitivity = truePositive/(truePositive+falseNegative)
+        accuracy = (truePositive+falsePositive)/(truePositive+falsePositive+trueNegative+falseNegative)
+        specificity = trueNegative/(trueNegative + falsePositive)
+        precision = truePositive/(truePositive + falsePositive)
+        recall = truePositive/(truePositive + falseNegative)
+        print('sensitivity: ',sensitivity)
+        print('accuracy: ',accuracy)
+        print('specificity: ',specificity)
+        print('precision: ',precision)
+        print('recall: ', recall)
+        print('falsePositive: ',falsePositive)
+        print('falseNegative:',falseNegative)
+        print('truePositive: ',truePositive)
+        print('trueNegative: ',trueNegative)
         epoch += 1
     maxAccuracy= 0.0
     for row in range(0,len(testAccuracy)):
@@ -135,7 +162,7 @@ if __name__ == "__main__":  # main function call
     text = 'eta = ' + str(eta[0])
     if Debug:
         print(confusionMatrixTest)
-    maxAccuracy = np.argmax(trainAccuracy)
+    
     print("highest Accuracy is: ",maxAccuracy)
     plt.plot(trainAccuracy)
     plt.plot(testAccuracy)
