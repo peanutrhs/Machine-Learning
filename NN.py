@@ -14,7 +14,7 @@ np.set_printoptions(precision=5)
 
 
 if __name__ == "__main__":  # main function call
-    Debug = False
+    Debug = True
     
     test = [] # testdata
     dir = os.listdir('.')  # get the 
