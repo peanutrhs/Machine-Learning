@@ -9,18 +9,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import random
 np.set_printoptions(precision=5)
-
-
-
+from sklearn.metrics import confusion_matrix
 
 if __name__ == "__main__":  # main function call
     Debug = True
     
     test = [] # testdata
-    dir = os.listdir('.')  # get the 
+    #dir = os.listdir('.')  # get the 
     
-    testdir = dir[0] + '/test.csv'
-    traindir = dir[0] + '/train.csv'
+    testdir =  'test.csv'
+    traindir = 'train.csv'
     eta = [0.01] # eta for each different eta
     # Get the data and import into arrays
     getData(testdir,test)
@@ -146,9 +144,9 @@ if __name__ == "__main__":  # main function call
                 confusioncol = truth[i]
                 confusionMatrixTest[confusionRow][confusioncol] += 1
         trainAccuracy.append(correctOutput/len(train))
-        if Debug:
-            print("confusion Matrix: ")
-            print(confusionMatrixTest)
+        #if Debug:
+            #print("confusion Matrix: ")
+            #print(confusionMatrixTest)
         print("correctOutput: ",correctOutput)
         print("trainAccuracy: ")
         print(trainAccuracy)
@@ -190,6 +188,7 @@ if __name__ == "__main__":  # main function call
     
 
     while(epoch < 79):
+        predictionList = list()
         print("starting Test")
         print('epoch: ',epoch)
         predictedPrice= []
@@ -236,6 +235,7 @@ if __name__ == "__main__":  # main function call
             tk = np.reshape(groundTruth[truth[i]],(6,1)).astype(float)
             tk = np.select([tk==1,tk==0],[0.9,0.1],tk)
             prediction = np.argmax(outputLayerSum)
+            predictionList.append(prediction)
             # put prediction into price prediction array:
             if prediction == 1:
                 predictedPrice.append(50000.0)
@@ -282,12 +282,15 @@ if __name__ == "__main__":  # main function call
                 confusionRow = prediction
                 confusioncol = truth[i]
                 confusionMatrixTest[confusionRow][confusioncol] += 1
+        print("Printing the Confusion Matrix#######:")
+        print(confusion_matrix(truth, predictionList))
+        print('####################################')
         testAccuracy.append(correctOutput/len(test))
         print("testAccuracy: ")
         print(testAccuracy)
         if Debug:
-            print("confusion Matrix: ")
-            print(confusionMatrixTest)
+           # print("confusion Matrix: ")
+           # print(confusionMatrixTest)
             print("correctOutput: ",correctOutput)
             print("testAccuracy: ")
             print(testAccuracy)
@@ -343,7 +346,7 @@ if __name__ == "__main__":  # main function call
     plt.xlabel('Epochs')
     plt.legend({'training','test'})
     plt.show()
-    df_cm = pd.DataFrame(confusionMatrixTest,range(5),range(5))
-    sb.set(font_scale = 1.4)
-    sb.heatmap(df_cm,annot=True,annot_kws={"size":12})
-    plt.show()     
+    #df_cm = pd.DataFrame(confusionMatrixTest,range(5),range(5))
+    #sb.set(font_scale = 1.4)
+    #sb.heatmap(df_cm,annot=True,annot_kws={"size":12})
+    #plt.show()     
