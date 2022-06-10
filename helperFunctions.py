@@ -1017,7 +1017,11 @@ def createTruthValues(truth,source):
     print('length of truth: ',len(truth))
     for row in range(0,len(truth)):
         truth[row] = int(get_class(source[row][80]))
-
+def fillActualPrice(source):
+    actualprice = []
+    for row in range(0,len(source)):
+        actualprice.append(source[row][80])
+    return actualprice
 def getData(file,array):
     with open(file, newline='\n') as csvfile:  # read in from test.csv for test data
         csv_reader = csv.reader(csvfile, delimiter=',') # reads in
