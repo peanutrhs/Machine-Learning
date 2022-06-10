@@ -238,13 +238,13 @@ if __name__ == "__main__":  # main function call
             prediction = np.argmax(outputLayerSum)
             # put prediction into price prediction array:
             if prediction == 1:
-                predictedPrice.append(25000.0)
+                predictedPrice.append(50000.0)
             elif prediction == 2:
-                predictedPrice.append(75000.0)
+                predictedPrice.append(100000.0)
             elif prediction == 3:
-                predictedPrice.append(125000.0)
+                predictedPrice.append(150000.0)
             elif prediction == 4:
-                predictedPrice.append(175000.0)
+                predictedPrice.append(200000.0)
             else: 
                 predictedPrice.append(225000.0)
             
@@ -322,8 +322,16 @@ if __name__ == "__main__":  # main function call
         RMSE = np.sqrt(MSE)
         errRMS.append(RMSE)
 #---------------------------------------END TEST---------------------------------#
+    actualPrice.sort()
+    predictedPrice.sort()
     
-   
+    plt.plot(actualPrice)
+    plt.plot(predictedPrice)
+    plt.title('Actual vs Predicted Prices')
+    plt.ylabel('$ Price')
+    plt.xlabel('Index')
+    plt.legend({'Actual','Predicted'})
+    plt.show()
     meanRMSE = np.mean(errRMS)
     print('errRMS',errRMS)
     print('meanRMS: ',meanRMSE)
