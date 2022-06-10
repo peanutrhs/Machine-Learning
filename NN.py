@@ -31,12 +31,12 @@ if __name__ == "__main__":  # main function call
     testAccuracy = []
     numHiddenUnits = 40
     HiddenLayer = np.zeros((numHiddenUnits+1,1)) # hold all my outputs from initial dot product
-    # train (1461,81)
+    # train (731,81)
     
     
     groundTruth = np.identity(6,dtype = int); #this is a 5 X 5 I matrix  
     # create the truth with the assigned class. 
-    truth = np.zeros((1460)).astype(int)
+    truth = np.zeros((730)).astype(int)
     
     
     
@@ -52,8 +52,10 @@ if __name__ == "__main__":  # main function call
     # train[i] => (80,) inputToHiddenWeights => (1460,20)
    
     epoch = 0 
-    while(epoch <400):
+    errRMS = []
+    while(epoch <79):
         print("starting Epoch ",epoch)
+        predictedPrice= []
         falsePositive = 0
         falseNegative = 0
         truePositive = 0
@@ -72,6 +74,7 @@ if __name__ == "__main__":  # main function call
             print(train)
         train = train.astype(float)
         createTruthValues(truth,train)
+        actualPrice = fillActualPrice(train)
         train = np.delete(train,80,1) # delete the home values out of training set
         if Debug:
             print('train:',train)
@@ -95,6 +98,16 @@ if __name__ == "__main__":  # main function call
             tk = np.reshape(groundTruth[truth[i]],(6,1)).astype(float)
             tk = np.select([tk==1,tk==0],[0.9,0.1],tk)
             prediction = np.argmax(outputLayerSum)
+            if prediction == 1:
+                predictedPrice.append(25000.0)
+            elif prediction == 2:
+                predictedPrice.append(75000.0)
+            elif prediction == 3:
+                predictedPrice.append(125000.0)
+            elif prediction == 4:
+                predictedPrice.append(175000.0)
+            else: 
+                predictedPrice.append(225000.0)
             if  Debug:
                 print('prediction:',prediction)
             #print('Prediction: ', prediction, ' truth[',i,']: ',truth[i])
@@ -154,6 +167,11 @@ if __name__ == "__main__":  # main function call
         print('truePositive: ',truePositive)
         print('trueNegative: ',trueNegative)
         epoch += 1
+        E = np.log(np.abs(predictedPrice)- np.log(actualPrice))
+        SE = np.square(E)
+        MSE = np.mean(SE)
+        RMSE = np.sqrt(MSE)
+        errRMS.append(RMSE)
     maxAccuracy= 0.0
     for row in range(0,len(testAccuracy)):
         if testAccuracy[row]>  maxAccuracy:
@@ -163,16 +181,161 @@ if __name__ == "__main__":  # main function call
     if Debug:
         print(confusionMatrixTest)
     
-    print("highest Accuracy is: ",maxAccuracy)
+    epoch = 0
+    meanRMSE = np.mean(errRMS)
+    print('errRMS',errRMS)
+    print('meanRMS: ',meanRMSE)
+#---------------------------------------TEST-------------------------------------#
+    errRMS = []
+    
+
+    while(epoch < 79):
+        print("starting Test")
+        print('epoch: ',epoch)
+        predictedPrice= []
+        truth = np.zeros((729)).astype(int)
+        falsePositive = 0
+        falseNegative = 0
+        truePositive = 0
+        trueNegative = 0
+        test = [] # testdata
+        getData(testdir,test)
+        test = np.array(test)
+        test = np.delete(test,0,0) # delete the row header
+        test[:,0] = 1 # set id to bias in train
+        if Debug:
+            print("train: ",test)
+        np.random.shuffle(test)
+        convertData(test)
+        if Debug:
+            print("train Shuffled:")
+            print(test)
+        test = test.astype(float)
+        createTruthValues(truth,test)
+        actualPrice = fillActualPrice(test)
+        test = np.delete(test,80,1) # delete the home values out of training set
+        if Debug:
+            print('train:',test)
+        correctOutput = 0
+        confusionMatrixTest = np.zeros((5,5),dtype=int)
+        for i in range(0,len(test)):
+         # Hidden Layer before activation 
+            hiddenLayerSum = np.dot(np.transpose(test[i]),inputToHiddenWeights) # hiddenLayerSum (1,20)
+            
+            #squash hidden layer
+            for j in range(0,hiddenLayerSum.size):
+                hiddenLayerSum[j] = 1/(1+ np.exp(-hiddenLayerSum[j])) # => (20,1)
+                HiddenLayer[j+1] = hiddenLayerSum[j] #putting into hiddenLayer
+            for k in range(0,hiddenLayerSum.size):
+                outputLayerSum = np.dot(np.transpose(hiddenToOutputWeights),HiddenLayer) # => (5,1)
+            
+            #squash output Layer
+            for l in range(0,outputLayerSum.size):
+                outputLayerSum[l] = 1/(1 + np.exp(-outputLayerSum[l])) # => (5,1)
+            # iterpret the output layer as a classification
+            tk = np.reshape(groundTruth[truth[i]],(6,1)).astype(float)
+            tk = np.select([tk==1,tk==0],[0.9,0.1],tk)
+            prediction = np.argmax(outputLayerSum)
+            # put prediction into price prediction array:
+            if prediction == 1:
+                predictedPrice.append(25000.0)
+            elif prediction == 2:
+                predictedPrice.append(75000.0)
+            elif prediction == 3:
+                predictedPrice.append(125000.0)
+            elif prediction == 4:
+                predictedPrice.append(175000.0)
+            else: 
+                predictedPrice.append(225000.0)
+            
+            if  Debug:
+                print('prediction:',prediction)
+            #print('Prediction: ', prediction, ' truth[',i,']: ',truth[i])
+            if prediction != truth[i]:
+                if Debug:
+                    print('truth[i]!=prediction')
+                    print('prediction: ', prediction, ' truth[i]:',truth[i],' tk[prediction]:',tk[prediction])
+                if tk[prediction] == 0.1:
+                    trueNegative += 1
+                else:
+                    falsePositive += 1
+                outputError = np.zeros((5,1))
+                hiddenError = np.zeros((numHiddenUnits,1))
+                for m in range(0,len(outputError)):
+                    outputError[m] = outputLayerSum[m]*(1-outputLayerSum[m])*(tk[m]-outputLayerSum[m]) #producing outputError
+                for n in range(0,len(hiddenToOutputWeights)-1):
+                    sum = np.dot(hiddenToOutputWeights,outputError)
+                    sum = np.sum(sum)
+                    #hiddenLayer => (21,1), hiddenError = > (21,1)
+                    hiddenError[n] = HiddenLayer[n+1]*(1-HiddenLayer[n+1])*sum #deltaOutput
+                    
+               
+            if(truth[i]==prediction):
+                if Debug:
+                    print('truth[i]==prediction')
+                    print('prediction: ', prediction, ' truth[i]:',truth[i],' tk[prediction]:',tk[prediction])
+                if tk[prediction] == 0.9:
+                        truePositive += 1
+                else:
+                    falsePositive += 1
+                correctOutput +=  1
+                confusionRow = prediction
+                confusioncol = truth[i]
+                confusionMatrixTest[confusionRow][confusioncol] += 1
+        testAccuracy.append(correctOutput/len(test))
+        print("testAccuracy: ")
+        print(testAccuracy)
+        if Debug:
+            print("confusion Matrix: ")
+            print(confusionMatrixTest)
+            print("correctOutput: ",correctOutput)
+            print("testAccuracy: ")
+            print(testAccuracy)
+        sensitivity = 0
+        accuracy = 0
+        precision = 0
+        recall = 0
+        if (truePositive+falseNegative) > 0:
+            sensitivity = truePositive/(truePositive+falseNegative)
+        if (truePositive+falsePositive+trueNegative+falseNegative) > 0:
+            accuracy = (truePositive+falsePositive)/(truePositive+falsePositive+trueNegative+falseNegative)
+        if (trueNegative + falsePositive) >0:
+            specificity = trueNegative/(trueNegative + falsePositive)
+        if (truePositive + falsePositive) > 0:
+            precision = truePositive/(truePositive + falsePositive)
+        if (truePositive + falseNegative) > 0:
+            recall = truePositive/(truePositive + falseNegative)
+        print('sensitivity: ',sensitivity)
+        print('accuracy: ',accuracy)
+        print('specificity: ',specificity)
+        print('precision: ',precision)
+        print('recall: ', recall)
+        print('falsePositive: ',falsePositive)
+        print('falseNegative:',falseNegative)
+        print('truePositive: ',truePositive)
+        print('trueNegative: ',trueNegative)
+        epoch +=1
+        
+        E = np.log(np.abs(predictedPrice)- np.log(actualPrice))
+        SE = np.square(E)
+        MSE = np.mean(SE)
+        RMSE = np.sqrt(MSE)
+        errRMS.append(RMSE)
+#---------------------------------------END TEST---------------------------------#
+    
+   
+    meanRMSE = np.mean(errRMS)
+    print('errRMS',errRMS)
+    print('meanRMS: ',meanRMSE)
     plt.plot(trainAccuracy)
     plt.plot(testAccuracy)
     plt.title('Training & Test Plot')
     plt.suptitle(text)
     plt.ylabel('Accuracy')
     plt.xlabel('Epochs')
-    plt.legend('trainig','test')
+    plt.legend({'training','test'})
     plt.show()
     df_cm = pd.DataFrame(confusionMatrixTest,range(5),range(5))
     sb.set(font_scale = 1.4)
-    sb.heatmap(df_cm,annot=True,annot_kws={"size":30})
+    sb.heatmap(df_cm,annot=True,annot_kws={"size":12})
     plt.show()     
